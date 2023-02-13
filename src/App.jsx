@@ -14,16 +14,34 @@ const getitemsfromlocal=()=>{
 function App() {
   const[data,setData]=useState("");
   const[item,setItem]=useState(getitemsfromlocal());
-
+  const[toggleSubmit,settoggleSubmit]=useState(true);
+  const[editItem,seteeditItem]=useState(null);
   function handleChnage(event){
     setData(event.target.value);
     console.log(data);
   }
   function handleClick()
   { 
-   { if (data !==""){
+   { if (data ==""){
+    alert("todo can't be empty")
+   }
+   else if(data && !toggleSubmit){
+   setItem(
+    item.map((elem)=>
+    {
+      if(elem.id==editItem){
+        return{...elem,name:data}
+      }
+      return elem;
+    }))
+    settoggleSubmit(true);
+    setData('');
+    seteeditItem(null);
+    }
+   else{
     setItem((oldItem)=>{
-      return[...oldItem,data];
+      const newit={id:new Date().getTime().toString(),name:data}
+      return[...oldItem,newit];
     })}
    }
     setData("");
@@ -32,9 +50,9 @@ function App() {
   {
     console.log("deleted",id);
     const olditems=[...item];
-    console.log(olditems);
-    const ittem=olditems.filter((element,i)=>{
-      return i!== id
+    console.log(olditems.name);
+    const ittem=olditems.filter((element)=>{
+      return id !== element.id
     })
   setItem(ittem);
   console.log("newitems",ittem);
@@ -43,6 +61,19 @@ function App() {
  useEffect(()=>{
   localStorage.setItem('list',JSON.stringify(item))
  },[item]);
+// 
+  
+
+ //edit list
+function handleUpdate(idd){
+let newItem=item.find((elem)=>{
+return elem.id===idd
+});
+settoggleSubmit(false);
+console.log(newItem);
+setData(newItem.name);
+seteeditItem(idd);
+}
   return (
     <div className="App">
      <div className='Main'>
@@ -53,12 +84,13 @@ function App() {
         <div>
           <input onChange={handleChnage} className='box1' type="text" placeholder='Write Your Todo Here!' value={data}></input>
         </div>
-        <button className='btn' onClick={handleClick}>Add</button>
+        {toggleSubmit ? <button className='btn' onClick={handleClick}>Add</button>:
+        <button className='btn' onClick={handleClick}>Update</button>}
       </div>
       <div className='bodybox'>
         <ul className="container">
-        {item.map((itemsvalue,i)=>{
-          return(<List key={i} deleteData={handleDelete} value={itemsvalue} id={i} />)
+        {item.map((itemsvalue)=>{
+          return(<List key={itemsvalue.id} updateData={handleUpdate} deleteData={handleDelete} value={itemsvalue.name} id={itemsvalue.id} />)
         })}
         </ul>
       </div>
